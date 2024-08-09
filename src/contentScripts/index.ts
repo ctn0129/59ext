@@ -174,6 +174,17 @@ function main() {
 			switch_amount.appendChild(text)
 		}, 1000)
 	}
+
+	// press esc to click .close-btn
+	document.addEventListener('keydown', function (event) {
+		if (event.key === 'Escape') {
+			// Select the button using its class name
+			const closeButton = document.querySelector<HTMLElement>('.close-btn')
+			if (closeButton) {
+				closeButton.click() // Simulate a click on the button
+			}
+		}
+	})
 }
 
 try {

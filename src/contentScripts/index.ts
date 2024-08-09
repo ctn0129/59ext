@@ -27,9 +27,9 @@ function main() {
 		`
 	document.head.appendChild(style)
 
-	// 換頁，下面都要重新跑一次
+	const numHiddenInThisPage = ref(0)
 
-	// Hide button
+	// 每當換頁時，都要跑一次
 	setTimeout(() => {
 		const sections = document.querySelectorAll('section.vue-list-rent-item')
 		if (!sections.length) {
@@ -40,7 +40,11 @@ function main() {
 		const observer = new MutationObserver(mutations => {
 			for (const mutation of mutations) {
 				if (mutation.type === 'attributes') {
-					console.log('page changed')
+					// 換頁時機
+					console.log('Page changed')
+					isHidden.value = false
+					numHiddenInThisPage.value = 0
+
 					appendHideButton()
 					hideSections()
 				}
@@ -87,6 +91,14 @@ function main() {
 		}
 	}, 1000)
 
+	const isHidden = ref(false)
+
+	watch(isHidden, () => {
+		if (isHidden.value) {
+			displayHiddenAmount()
+		}
+	})
+
 	function hideSections(delay: number = 0) {
 		setTimeout(() => {
 			const sections = document.querySelectorAll<HTMLElement>('section.vue-list-rent-item')
@@ -97,11 +109,14 @@ function main() {
 				if (!id) throw new Error('Cannot find id')
 
 				if (hiddenHouses.value.find(house => house.id === id)) {
+					numHiddenInThisPage.value++
 					section.style.background = 'gray'
 				} else {
 					section.style.background = 'white'
 				}
 			})
+
+			isHidden.value = true
 		}, delay)
 	}
 
@@ -134,6 +149,30 @@ function main() {
 		if (element) {
 			element.style.display = 'none'
 		}
+	}
+
+	// 顯示本頁為隱藏的數量
+	function displayHiddenAmount() {
+		setTimeout(() => {
+			// 計算本頁有幾個 section
+			const sections = document.querySelectorAll<HTMLElement>('section.vue-list-rent-item')
+			if (!sections.length) throw new Error('Cannot find .vue-list-rent-item')
+
+			// 顯示本頁為隱藏的數量
+			const switch_amount = document.querySelector<HTMLElement>('div.list-container-content .switch-tips .switch-amount')
+			if (!switch_amount) throw new Error('Cannot find .switch-amount')
+
+			// remove text by id
+			document.getElementById('displayHiddenAmount')?.remove()
+
+			// 顯示本頁待看的數量
+			const text = document.createElement('div')
+			// add id to text
+			text.style.display = 'inline'
+			text.id = 'displayHiddenAmount'
+			text.innerHTML = ` (已隱藏 ${numHiddenInThisPage.value} 個，本頁待看 ${sections.length - numHiddenInThisPage.value} 個)`
+			switch_amount.appendChild(text)
+		}, 1000)
 	}
 }
 

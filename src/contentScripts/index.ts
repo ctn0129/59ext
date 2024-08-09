@@ -9,6 +9,9 @@ import { hiddenHouses } from '~/logic'
 function main() {
 	console.info('Hello World from 59ext')
 
+	// @todo 區分是列表頁還是詳細頁
+	// @todo 正確偵測 section dom 已經 mounted 的時機
+
 	// inject css
 	const style = document.createElement('style')
 	style.textContent = `
@@ -180,7 +183,7 @@ function main() {
 		}
 	})
 
-	// mount component to context window
+	// mount App.vue to context window
 	const container = document.createElement('div')
 	container.id = __NAME__
 	const root = document.createElement('div')
@@ -204,5 +207,6 @@ function main() {
 try {
 	main()
 } catch (e: any) {
+	console.error(e)
 	alert(e)
 }

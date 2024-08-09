@@ -38,7 +38,7 @@ export async function getManifest() {
 		host_permissions: ['*://*/*'],
 		content_scripts: [
 			{
-				matches: ['*://*/*'],
+				matches: ['https://rent.591.com.tw/*'],
 				js: ['dist/contentScripts/index.global.js'],
 			},
 		],

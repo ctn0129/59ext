@@ -9,8 +9,8 @@ export const links = [
 		&shType=host
 		&floor=3_
 		&multiNotice=not_cover
-		&order=money
-		&orderType=asc`,
+		&order=posttime
+		&orderType=desc`,
 	},
 	{
 		name: '獨立套房',
@@ -22,7 +22,7 @@ export const links = [
 		&shType=host
 		&floor=3_
 		&multiNotice=not_cover
-		&order=money
-		&orderType=asc`,
+		&order=posttime
+		&orderType=desc`,
 	},
 ]

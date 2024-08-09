@@ -140,7 +140,7 @@ function main() {
 		'.vue-list-new-head', // 第二排的標題
 		'.container-right', // 右邊的廣告
 		'.side_tool_wrap.newFiexdSide', // 最右邊的漂浮工具列
-		'.vue-filter-container', // 篩選器
+		// '.vue-filter-container', // 篩選器
 		'.vue-list-recommendation', // 推薦區塊
 	]
 

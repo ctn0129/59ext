@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { onMessage } from 'webext-bridge/content-script'
 import { createApp } from 'vue'
-import App from './views/App.vue'
+import App from './App.vue'
 import { setupApp } from '~/logic/common-setup'
 import { send } from 'vite'
 import { links } from '~/core'
@@ -110,9 +110,11 @@ function main() {
 
 				if (hiddenHouses.value.find(house => house.id === id)) {
 					numHiddenInThisPage.value++
-					section.style.background = 'gray'
+					// section.style.background = 'gray'
+					section.style.display = 'none'
 				} else {
-					section.style.background = 'white'
+					// section.style.background = 'white'
+					section.style.display = 'block'
 				}
 			})
 
@@ -140,7 +142,7 @@ function main() {
 		'.vue-list-new-head', // 第二排的標題
 		'.container-right', // 右邊的廣告
 		'.side_tool_wrap.newFiexdSide', // 最右邊的漂浮工具列
-		// '.vue-filter-container', // 篩選器
+		'.vue-filter-container', // 篩選器
 		'.vue-list-recommendation', // 推薦區塊
 	]
 
@@ -170,7 +172,7 @@ function main() {
 			// add id to text
 			text.style.display = 'inline'
 			text.id = 'displayHiddenAmount'
-			text.innerHTML = ` (已隱藏 ${numHiddenInThisPage.value} 個，本頁待看 ${sections.length - numHiddenInThisPage.value} 個)`
+			text.innerHTML = ` (已隱藏 ${numHiddenInThisPage.value} 個，本頁尚有 ${sections.length - numHiddenInThisPage.value} 個)`
 			switch_amount.appendChild(text)
 		}, 1000)
 	}
@@ -185,6 +187,21 @@ function main() {
 			}
 		}
 	})
+
+	// mount component to context window
+	const container = document.createElement('div')
+	container.id = __NAME__
+	const root = document.createElement('div')
+	const styleEl = document.createElement('link')
+	const shadowDOM = container.attachShadow?.({ mode: __DEV__ ? 'open' : 'closed' }) || container
+	styleEl.setAttribute('rel', 'stylesheet')
+	styleEl.setAttribute('href', browser.runtime.getURL('dist/contentScripts/style.css'))
+	shadowDOM.appendChild(styleEl)
+	shadowDOM.appendChild(root)
+	document.body.appendChild(container)
+	const app = createApp(App)
+	setupApp(app)
+	app.mount(root)
 }
 
 try {

@@ -7,3 +7,4 @@ type House = {
 	title: string
 }
 export const hiddenHouses = useWebExtensionStorage('hidden-houses', [] as House[])
+export const savedHouses = useWebExtensionStorage('saved-houses', [] as House[])

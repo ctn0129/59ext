@@ -4,17 +4,12 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { setupApp } from '~/logic/common-setup'
 import { send } from 'vite'
-
 import { hiddenHouses } from '~/logic'
 
-const hostname = 'rent.591.com.tw'
-
 function main() {
-	// if (window.location.hostname !== hostname) return
+	console.info('Hello World from 59ext')
 
-	console.info('Hello world from webext')
-
-	// inject style
+	// inject css
 	const style = document.createElement('style')
 	style.textContent = `
 			button.jc-hide-button {
@@ -132,8 +127,6 @@ function main() {
 			hideSections()
 		}
 	})
-
-	// 如何偵測 url 變化？目的是在切換頁面時，必須重新綁定 hide button，因為整個 DOM section 和 id 都改變了
 
 	// hiding content
 	const hidingClasses = [

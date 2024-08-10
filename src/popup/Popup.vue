@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { storageDemo } from '~/logic/storage'
 import { links } from '~/core'
+import { runtime } from 'webextension-polyfill'
 
 function openOptionsPage() {
-	// @ts-ignore
-	chrome.runtime.openOptionsPage(() => {})
+	runtime.openOptionsPage()
 }
 </script>
 

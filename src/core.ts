@@ -1,6 +1,6 @@
 export const links = [
 	{
-		name: '台北整層住家',
+		name: '整層住家',
 		url: `https://rent.591.com.tw/?
 		showMore=1
 		&kind=1
@@ -9,10 +9,12 @@ export const links = [
 		&floor=3_
 		&multiNotice=not_cover
 		&order=posttime
-		&orderType=desc`,
+		&orderType=desc
+		&other=newPost
+		`,
 	},
 	{
-		name: '台北獨立套房',
+		name: '獨立套房',
 		url: `https://rent.591.com.tw/?
 		showMore=1
 		&kind=2
@@ -21,6 +23,8 @@ export const links = [
 		&floor=3_
 		&multiNotice=not_cover
 		&order=posttime
-		&orderType=desc`,
+		&orderType=desc
+		&other=newPost
+		`,
 	},
 ]

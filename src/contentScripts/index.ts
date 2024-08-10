@@ -13,6 +13,17 @@ function main() {
 	const isDetailPage = /^\d+$/.test(parsedUrl.pathname.slice(1))
 	if (isDetailPage) {
 		console.info('Hello House Detail Page')
+
+		// press esc to click .close-btn
+		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape') {
+				// Select the button using its class name
+				const closeButton = document.querySelector<HTMLElement>('.close-btn')
+				if (closeButton) {
+					closeButton.click() // Simulate a click on the button
+				}
+			}
+		})
 		return
 	}
 
@@ -212,7 +223,10 @@ function main() {
 		() => {
 			const hiddenClasses: { [key: string]: boolean } = {
 				'.nav-wrapper.house-page': false, // 最上面的 nav
-				'.vue-list-new-head': false, // 第二排的標題
+				'.new-search-logo': false,
+				'.new-search-input.form-inline': false, // 搜尋
+				'.search-link': false, // 社區找房、地圖找房
+				'.vue-list-new-head': isFilterHidden.value, // 選擇城市
 				'.container-right': false, // 右邊的廣告
 				'.side_tool_wrap.newFiexdSide': false, // 最右邊的漂浮工具列
 				'.vue-filter-container': isFilterHidden.value, // 篩選器
@@ -258,17 +272,6 @@ function main() {
 			switch_amount.appendChild(text)
 		}, 1000)
 	}
-
-	// press esc to click .close-btn
-	document.addEventListener('keydown', function (event) {
-		if (event.key === 'Escape') {
-			// Select the button using its class name
-			const closeButton = document.querySelector<HTMLElement>('.close-btn')
-			if (closeButton) {
-				closeButton.click() // Simulate a click on the button
-			}
-		}
-	})
 
 	// mount App.vue to context window
 	const container = document.createElement('div')

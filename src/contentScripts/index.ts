@@ -9,6 +9,13 @@ import { hiddenHouses, isFilterHidden, savedHouses } from '~/logic'
 function main() {
 	console.info('Hello World from 59ext')
 
+	const parsedUrl = new URL(window.location.href)
+	const isDetailPage = /^\d+$/.test(parsedUrl.pathname.slice(1))
+	if (isDetailPage) {
+		console.info('Hello House Detail Page')
+		return
+	}
+
 	// @todo 區分是列表頁還是詳細頁
 	// @todo observer 可否同時監控 section mounted 和 page changed 的時機？
 
@@ -189,7 +196,6 @@ function main() {
 	// note: 本身自帶 immediate
 	// 首次載入時跑了兩次，一次 for hiddenHouses，一次 for savedHouses
 	watch([hiddenHouses, savedHouses], () => {
-		console.log('watch')
 		// 第一次需要延遲 1 秒，否則會找不到 element
 		if (counter === 0) {
 			renderSection(1000)
@@ -214,7 +220,6 @@ function main() {
 			}
 
 			for (const className in hiddenClasses) {
-				console.log(className)
 				const element = document.querySelector<HTMLElement>(className)
 				if (element) {
 					if (!hiddenClasses[className]) {

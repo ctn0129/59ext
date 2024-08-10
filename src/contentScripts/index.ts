@@ -4,7 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { setupApp } from '~/logic/common-setup'
 import { send } from 'vite'
-import { hiddenHouses, savedHouses } from '~/logic'
+import { hiddenHouses, isFilterHidden, savedHouses } from '~/logic'
 
 function main() {
 	console.info('Hello World from 59ext')
@@ -186,7 +186,10 @@ function main() {
 
 	let counter = 0
 
+	// note: 本身自帶 immediate
+	// 首次載入時跑了兩次，一次 for hiddenHouses，一次 for savedHouses
 	watch([hiddenHouses, savedHouses], () => {
+		console.log('watch')
 		// 第一次需要延遲 1 秒，否則會找不到 element
 		if (counter === 0) {
 			renderSection(1000)
@@ -196,22 +199,36 @@ function main() {
 		}
 	})
 
-	// hiding content
-	const hidingClasses = [
-		'.nav-wrapper.house-page', // 最上面的 nav
-		'.vue-list-new-head', // 第二排的標題
-		'.container-right', // 右邊的廣告
-		'.side_tool_wrap.newFiexdSide', // 最右邊的漂浮工具列
-		'.vue-filter-container', // 篩選器
-		'.vue-list-recommendation', // 推薦區塊
-	]
+	// Hide content
 
-	for (const className of hidingClasses) {
-		const element = document.querySelector<HTMLElement>(className)
-		if (element) {
-			element.style.display = 'none'
-		}
-	}
+	watch(
+		isFilterHidden,
+		() => {
+			const hiddenClasses: { [key: string]: boolean } = {
+				'.nav-wrapper.house-page': false, // 最上面的 nav
+				'.vue-list-new-head': false, // 第二排的標題
+				'.container-right': false, // 右邊的廣告
+				'.side_tool_wrap.newFiexdSide': false, // 最右邊的漂浮工具列
+				'.vue-filter-container': isFilterHidden.value, // 篩選器
+				'.vue-list-recommendation': false, // 推薦區塊
+			}
+
+			for (const className in hiddenClasses) {
+				console.log(className)
+				const element = document.querySelector<HTMLElement>(className)
+				if (element) {
+					if (!hiddenClasses[className]) {
+						element.style.display = 'none'
+					} else {
+						element.style.display = 'block'
+					}
+				}
+			}
+		},
+		{
+			immediate: true,
+		},
+	)
 
 	// 顯示本頁為隱藏的數量
 	function displayHiddenAmount() {

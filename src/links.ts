@@ -9,9 +9,7 @@ export const links = [
 		&floor=3_
 		&multiNotice=not_cover
 		&order=posttime
-		&orderType=desc
-		&other=newPost
-		`,
+		&orderType=desc`,
 	},
 	{
 		name: '獨立套房',
@@ -23,8 +21,6 @@ export const links = [
 		&floor=3_
 		&multiNotice=not_cover
 		&order=posttime
-		&orderType=desc
-		&other=newPost
-		`,
+		&orderType=desc`,
 	},
 ]

@@ -24,7 +24,7 @@ const reversedHiddenHouses = computed(() => [...hiddenHouses.value].reverse())
 			<div v-for="house in reversedSavedHouses" :key="house.id" class="mt-2">
 				<div class="flex gap-2">
 					<button class="ext-btn" @click="unsaveHouse(house.id)">Unsave</button>
-					<a :href="`https://rent.591.com.tw/${house.id}`" target="_blank">{{ house.title }}</a>
+					<a class="ext-link" :href="`https://rent.591.com.tw/${house.id}`" target="_blank">{{ house.title }}</a>
 				</div>
 			</div>
 		</div>
@@ -36,7 +36,7 @@ const reversedHiddenHouses = computed(() => [...hiddenHouses.value].reverse())
 			<div v-for="house in reversedHiddenHouses" :key="house.id" class="mt-2">
 				<div class="flex gap-2">
 					<button class="ext-btn" @click="removeHiddenHouse(house.id)">Remove</button>
-					<a :href="`https://rent.591.com.tw/${house.id}`" target="_blank">{{ house.title }}</a>
+					<a class="ext-link" :href="`https://rent.591.com.tw/${house.id}`" target="_blank">{{ house.title }}</a>
 				</div>
 			</div>
 		</div>

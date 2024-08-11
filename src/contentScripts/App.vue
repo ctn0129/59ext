@@ -14,6 +14,8 @@ const displayKind = computed(() => {
 		return '整層住家'
 	} else if (kind.value === '2') {
 		return '獨立套房'
+	} else {
+		return `kind: ${kind.value}`
 	}
 })
 

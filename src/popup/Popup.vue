@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storageDemo } from '~/logic/storage'
-import { links } from '~/core'
+import { links } from '~/links'
 import { runtime } from 'webextension-polyfill'
 
 function openOptionsPage() {

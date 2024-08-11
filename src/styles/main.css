@@ -23,6 +23,6 @@ body,
 	font-size: 0.9em;
 }
 
-a {
+.ext-link {
 	@apply hover:opacity-100 hover:text-teal-600;
 }

@@ -18,10 +18,6 @@ const displayKind = computed(() => {
 		return `kind: ${kind.value}`
 	}
 })
-
-watch(isFilterHidden, () => {
-	console.log('isFilterHidden', isFilterHidden.value)
-})
 </script>
 
 <template>

@@ -23,4 +23,16 @@ export const links = [
 		&order=posttime
 		&orderType=desc`,
 	},
+	{
+		name: '獨立套房 (1.5-2萬)',
+		url: `https://rent.591.com.tw/?
+		showMore=1
+		&kind=2
+		&rentprice=15000,20000
+		&shType=host
+		&floor=3_
+		&multiNotice=not_cover
+		&order=posttime
+		&orderType=desc`,
+	},
 ]

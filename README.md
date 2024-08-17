@@ -1,7 +1,18 @@
 # 59ext
 
-針對 591 租屋網所設計的 chrome extension，優化你的找房體驗。
+針對 591 租屋網所設計的瀏覽器擴充套件，有助於改善找房的使用者體驗。
 
+## 功能
+
+- 直接隱藏所有廣告與不必要的區塊
+- 能夠隱藏物件，把再也不想看到的房間隱藏起來
+- 能夠儲存物件，可以在後台對已儲存的物件新增筆記
+- 房屋詳情頁面能夠按 esc 跳出圖片或地圖預覽
+- 明確顯示 url 內的篩選器參數
+
+## Credits
+
+Built from template: https://github.com/antfu-collective/vitesse-webext
 
 ## WebExtension Vite Starter
 

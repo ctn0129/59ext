@@ -3,17 +3,21 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { setupApp } from '~/logic/common-setup'
 import { hiddenHouses, isFilterHidden, savedHouses } from '~/logic'
-import { hideRightSideFloatingMenu } from './hide'
+import { hideContent, hideItemHeart, hideRightSideFloatingMenu } from './hide'
+import { watchImmediate } from '@vueuse/core'
+import { createHideBtn, createSaveBtn } from './buttons'
 
 function main() {
 	console.info('Hello World from 59ext')
 
 	const parsedUrl = new URL(window.location.href)
 	const isDetailPage = /^\d+$/.test(parsedUrl.pathname.slice(1))
+
 	if (isDetailPage) {
+		// =========================== 細節頁面的邏輯 ===========================
 		console.info('Hello House Detail Page')
 
-		// press esc to click .close-btn
+		// =========================== feat: esc to close ===========================
 		document.addEventListener('keydown', function (event) {
 			if (event.key === 'Escape') {
 				// Select the button using its class name
@@ -23,153 +27,71 @@ function main() {
 				}
 			}
 		})
+
 		return
 	}
 
-	// @todo 區分是列表頁還是詳細頁
-	// @todo observer 可否同時監控 section mounted 和 page changed 的時機？
+	// =========================== 列表頁面的邏輯 ===========================
 
-	// inject css
-	const style = document.createElement('style')
-	style.textContent = `
-			button.ext-hide-button {
-				position: absolute;
-				right: 10px;
-				top: 30px;
-				width: 100px;
-			}
+	// =========================== 隱藏元素 ===========================
 
-			button.ext-save-button {
-				position: absolute;
-				right: 10px;
-				top: 60px;
-				width: 100px;
-			}
-		`
-	document.head.appendChild(style)
+	watchImmediate(isFilterHidden, () => {
+		hideContent(isFilterHidden)
+	})
+
+	// 隱藏右側懸浮選單
+	hideRightSideFloatingMenu()
+
+	// =========================== inject css ===========================
+	injectCSS()
+
+	// =========================== feat: 隱藏與儲存物件 ===========================
 
 	const numHiddenInThisPage = ref(0)
 
-	// 確保 section dom 已經 mounted
-	setTimeout(() => {
-		// copy pagination to the top
-		// copied 的元素，換頁功能無法實現
-		// const pagination = document.querySelector('.vue-public-list-page')
+	// 抓取租屋清單的項目
+	const itemSelector = '.list-wrapper > main .item'
 
-		// if (pagination) {
-		// 	const cloned_pagination = pagination.cloneNode(true) as HTMLElement
-		// 	const target_container = document.querySelector('.container-content-left')
+	const items = document.querySelectorAll<HTMLElement>(itemSelector)
+	if (!items.length) {
+		throw new Error(`Cannot find ${itemSelector}`)
+	}
 
-		// 	if (target_container) {
-		// 		const children = target_container.children
+	function getInfoByItem(item: HTMLElement): { id: string; title: string } {
+		const linkElement = item.querySelector<HTMLElement>('.item-info-title a')
+		if (!linkElement) throw new Error('Cannot find .item-info-title a')
+		const id = linkElement.getAttribute('href')?.split('/').pop()
+		if (!id) throw new Error('Cannot get id')
 
-		// 		if (children.length >= 2) {
-		// 			target_container.insertBefore(cloned_pagination, children[2])
-		// 		} else {
-		// 			target_container.insertBefore(cloned_pagination, target_container)
-		// 		}
-		// 	}
-		// }
+		const title = linkElement.innerText
+		if (!title) throw new Error('Cannot get title')
 
-		// 抓取本頁的 section
-		const sections = document.querySelectorAll('section.vue-list-rent-item')
-		if (!sections.length) {
-			throw new Error('Cannot find .vue-list-rent-item')
-		}
+		return { id, title }
+	}
 
-		// add mutation observer
-		const observer = new MutationObserver(mutations => {
-			for (const mutation of mutations) {
-				if (mutation.type === 'attributes') {
-					// 換頁時機
-					console.log('Page changed')
-					isHidden.value = false
-					numHiddenInThisPage.value = 0
+	for (let i = 0; i < items.length; i++) {
+		// 隱藏原本的愛心儲存
+		hideItemHeart(items[i])
 
-					appendButtons()
-					renderSection()
-				}
-			}
-		})
+		const { id, title } = getInfoByItem(items[i])
 
-		const switch_list_content = document.querySelector('.vue-list-rent-item')
-		if (switch_list_content) {
-			observer.observe(switch_list_content, { attributes: true, attributeFilter: ['data-bind'] })
-		}
+		// 新增隱藏按鈕、儲存按鈕
+		const hideBtn = createHideBtn(id, title)
+		const saveBtn = createSaveBtn(id, title)
+		const itemInfo = items[i].querySelector<HTMLElement>('.item-info')
+		if (!itemInfo) throw new Error('Cannot find .item-info')
 
-		appendButtons()
+		itemInfo.appendChild(hideBtn)
+		itemInfo.appendChild(saveBtn)
+	}
 
-		function appendButtons() {
-			sections.forEach(section => {
-				const id = section.getAttribute('data-bind')
-				let title = 'no title'
-				const itemTitleElement = document.querySelector(`section.vue-list-rent-item[data-bind="${id}"] .item-title`)
-				if (itemTitleElement) {
-					const spanElement = itemTitleElement.querySelector('span')
-					if (spanElement && spanElement.textContent) {
-						title = spanElement.textContent
-					}
-				}
-				if (!id) return
+	// const isHidden = ref(false)
 
-				// create Hide/Show button
-				const hideBtn = document.createElement('button')
-				hideBtn.innerText = 'Hide'
-				hideBtn.className = 'ext-hide-button'
-				hideBtn.addEventListener('click', () => onClickHideButton(id))
-
-				function onClickHideButton(id: string) {
-					// show if already hidden
-					if (hiddenHouses.value.find(house => house.id === id)) {
-						hiddenHouses.value = hiddenHouses.value.filter(house => house.id !== id)
-						return
-					}
-
-					hiddenHouses.value.push({
-						id,
-						title,
-					})
-				}
-
-				// create Save button
-				const saveBtn = document.createElement('button')
-				saveBtn.innerText = 'Save/Unsave'
-				saveBtn.className = 'ext-save-button'
-				saveBtn.addEventListener('click', () => onClickSaveButton(id))
-
-				function onClickSaveButton(id: string) {
-					// unsave if already saved
-					if (savedHouses.value.find(house => house.id === id)) {
-						savedHouses.value = savedHouses.value.filter(house => house.id !== id)
-						return
-					}
-
-					savedHouses.value.push({
-						id,
-						title,
-					})
-				}
-
-				// append buttons
-				section.appendChild(hideBtn)
-				section.appendChild(saveBtn)
-
-				// 把 .item-collect 拿掉
-				const item_collect = document.querySelector(`section.vue-list-rent-item .item-collect`)
-				if (item_collect) {
-					item_collect.remove()
-				}
-			})
-		}
-	}, 1000)
-
-	const isHidden = ref(false)
-
-	watch(isHidden, () => {
-		if (isHidden.value) {
-			displayHiddenAmount()
-		}
-	})
+	// watch(isHidden, () => {
+	// 	if (isHidden.value) {
+	// 		displayHiddenAmount()
+	// 	}
+	// })
 
 	function renderSection(delay: number = 0) {
 		setTimeout(() => {
@@ -215,47 +137,6 @@ function main() {
 		}
 	})
 
-	// Hide content
-
-	watch(
-		isFilterHidden,
-		() => {
-			const hiddenClasses: { [key: string]: boolean } = {
-				'.header-wrapper': false, // 最上面的 nav
-				'.new-search-logo': false,
-				'.new-search-input.form-inline': false, // 搜尋
-				'.search-link': false, // 社區找房、地圖找房
-				'.vue-list-new-head': isFilterHidden.value, // 選擇城市
-				'.side_tool_wrap.newFiexdSide': false, // 最右邊的漂浮工具列
-				'.filter-container': isFilterHidden.value, // 篩選器
-				'.recommend-container': false, // 推薦區塊
-			}
-
-			for (const className in hiddenClasses) {
-				const element = document.querySelector<HTMLElement>(className)
-				if (element) {
-					if (!hiddenClasses[className]) {
-						element.style.display = 'none'
-					} else {
-						element.style.display = 'block'
-					}
-				}
-			}
-
-			// 隱藏右側欄位廣告
-			const asideElement = document.querySelector<HTMLElement>('.list-wrapper aside')
-			if (asideElement) {
-				asideElement.style.display = 'none'
-			}
-		},
-		{
-			immediate: true,
-		},
-	)
-
-	// 隱藏右側懸浮選單
-	hideRightSideFloatingMenu()
-
 	// 顯示本頁為隱藏的數量
 	function displayHiddenAmount() {
 		setTimeout(() => {
@@ -280,7 +161,7 @@ function main() {
 		}, 1000)
 	}
 
-	// mount App.vue to context window
+	// =================================== Mount App.vue ================================
 	const container = document.createElement('div')
 	container.id = __NAME__
 	const root = document.createElement('div')
@@ -306,4 +187,36 @@ try {
 } catch (e: any) {
 	console.error(e)
 	alert(e)
+}
+
+function injectCSS() {
+	const style = document.createElement('style')
+	style.textContent = `
+			button.ext-hide-button {
+				position: absolute;
+				right: 10px;
+				top: 0px;
+				width: 100px;
+				padding: 10px;
+				cursor:pointer;
+			}
+
+			button.ext-hide-button:hover {
+				background-color: #d0cccc;
+			}
+
+			button.ext-save-button {
+				position: absolute;
+				right: 10px;
+				top: 40px;
+				width: 100px;
+				padding: 10px;
+				cursor:pointer;
+			}
+
+			button.ext-save-button:hover {
+				background-color: #d0cccc;
+			}
+		`
+	document.head.appendChild(style)
 }

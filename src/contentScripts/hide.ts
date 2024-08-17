@@ -36,3 +36,43 @@ export function hideRightSideFloatingMenu() {
 	// In case the element is already in the DOM, hide it immediately
 	hideAsideElement()
 }
+
+export function hideContent(isFilterHidden: Ref<boolean>) {
+	const hiddenClasses: { [key: string]: boolean } = {
+		'.header-wrapper': false, // 最上面的 nav
+		'.new-search-logo': false,
+		'.new-search-input.form-inline': false, // 搜尋
+		'.search-link': false, // 社區找房、地圖找房
+		'.vue-list-new-head': isFilterHidden.value, // 選擇城市
+		'.side_tool_wrap.newFiexdSide': false, // 最右邊的漂浮工具列
+		'.filter-container': isFilterHidden.value, // 篩選器
+		'.recommend-container': false, // 推薦區塊
+	}
+
+	for (const className in hiddenClasses) {
+		const element = document.querySelector<HTMLElement>(className)
+		if (element) {
+			if (!hiddenClasses[className]) {
+				element.style.display = 'none'
+			} else {
+				element.style.display = 'block'
+			}
+		}
+	}
+
+	// 隱藏右側欄位廣告
+	const asideElement = document.querySelector<HTMLElement>('.list-wrapper aside')
+	if (asideElement) {
+		asideElement.style.display = 'none'
+	}
+}
+
+/**
+ * 隱藏房屋的儲存愛心按鈕
+ */
+export function hideItemHeart(item: HTMLElement) {
+	const heart = item.querySelector<HTMLElement>('.item-info-fav')
+	if (!heart) throw new Error('Cannot find .item-info-fav')
+
+	heart.style.display = 'none'
+}

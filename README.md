@@ -10,6 +10,16 @@
 - 房屋詳情頁面能夠按 esc 跳出圖片或地圖預覽
 - 明確顯示 url 內的篩選器參數
 
+## Demo
+
+<table>
+  <tr>
+    <td><img width="300" src="https://github.com/johnson86tw/59ext/blob/main/demo/1.png"></td>
+    <td><img width="300" src="https://github.com/johnson86tw/59ext/blob/main/demo/2.png"></td>
+    <td><img width="300" src="https://github.com/johnson86tw/59ext/blob/main/demo/3.png"></td>
+  </tr>
+</table>
+
 ## Credits
 
 Built from template: https://github.com/antfu-collective/vitesse-webext

@@ -1,10 +1,9 @@
 /* eslint-disable no-console */
-import { onMessage } from 'webext-bridge/content-script'
 import { createApp } from 'vue'
 import App from './App.vue'
 import { setupApp } from '~/logic/common-setup'
-import { send } from 'vite'
 import { hiddenHouses, isFilterHidden, savedHouses } from '~/logic'
+import { hideRightSideFloatingMenu } from './hide'
 
 function main() {
 	console.info('Hello World from 59ext')
@@ -222,15 +221,14 @@ function main() {
 		isFilterHidden,
 		() => {
 			const hiddenClasses: { [key: string]: boolean } = {
-				'.nav-wrapper.house-page': false, // 最上面的 nav
+				'.header-wrapper': false, // 最上面的 nav
 				'.new-search-logo': false,
 				'.new-search-input.form-inline': false, // 搜尋
 				'.search-link': false, // 社區找房、地圖找房
 				'.vue-list-new-head': isFilterHidden.value, // 選擇城市
-				'.container-right': false, // 右邊的廣告
 				'.side_tool_wrap.newFiexdSide': false, // 最右邊的漂浮工具列
-				'.vue-filter-container': isFilterHidden.value, // 篩選器
-				'.vue-list-recommendation': false, // 推薦區塊
+				'.filter-container': isFilterHidden.value, // 篩選器
+				'.recommend-container': false, // 推薦區塊
 			}
 
 			for (const className in hiddenClasses) {
@@ -243,11 +241,20 @@ function main() {
 					}
 				}
 			}
+
+			// 隱藏右側欄位廣告
+			const asideElement = document.querySelector<HTMLElement>('.list-wrapper aside')
+			if (asideElement) {
+				asideElement.style.display = 'none'
+			}
 		},
 		{
 			immediate: true,
 		},
 	)
+
+	// 隱藏右側懸浮選單
+	hideRightSideFloatingMenu()
 
 	// 顯示本頁為隱藏的數量
 	function displayHiddenAmount() {

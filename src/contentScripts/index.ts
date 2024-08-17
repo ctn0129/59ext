@@ -14,7 +14,7 @@ function main() {
 	const isDetailPage = /^\d+$/.test(parsedUrl.pathname.slice(1))
 
 	if (isDetailPage) {
-		// =========================== 細節頁面的邏輯 ===========================
+		// =========================== 細節頁面 ===========================
 		console.info('Hello House Detail Page')
 
 		// =========================== feat: esc to close ===========================
@@ -31,30 +31,106 @@ function main() {
 		return
 	}
 
-	// =========================== 列表頁面的邏輯 ===========================
-
 	// =========================== 隱藏元素 ===========================
 
 	watchImmediate(isFilterHidden, () => {
 		hideContent(isFilterHidden)
 	})
 
-	// 隱藏右側懸浮選單
 	hideRightSideFloatingMenu()
 
 	// =========================== inject css ===========================
+
 	injectCSS()
 
-	// =========================== feat: 隱藏與儲存物件 ===========================
+	// =================================== 渲染列表 ================================
 
-	const numHiddenInThisPage = ref(0)
+	const hiddenNum = ref(0)
 
-	// 抓取租屋清單的項目
-	const itemSelector = '.list-wrapper > main .item'
+	const main = document.querySelector<HTMLElement>('main')
+	if (!main) throw new Error('Cannot find main')
 
-	const items = document.querySelectorAll<HTMLElement>(itemSelector)
-	if (!items.length) {
-		throw new Error(`Cannot find ${itemSelector}`)
+	const callback: MutationCallback = (mutationsList: MutationRecord[], observer: MutationObserver) => {
+		for (let mutation of mutationsList) {
+			if (mutation.type === 'childList') {
+				if (mutation.target.nodeName === 'DIV') {
+					const link = main.querySelector('.link.v-middle')
+					if (link && mutation.removedNodes?.[0]?.nodeName === 'SPAN') {
+						setTimeout(() => {
+							console.log('observer render')
+							render()
+						}, 500)
+
+						break
+					}
+				}
+			}
+		}
+	}
+
+	const observer = new MutationObserver(callback)
+	observer.observe(main, { childList: true, subtree: true })
+
+	watch([hiddenHouses, savedHouses], () => {
+		console.log('watch hiddenHouses and savedHouses')
+		render()
+	})
+
+	function render() {
+		console.log('render')
+		hiddenNum.value = 0
+
+		// 抓取租屋清單的項目
+		const itemSelector = '.list-wrapper > main .item'
+
+		const items = document.querySelectorAll<HTMLElement>(itemSelector)
+		if (!items.length) {
+			throw new Error(`Cannot find ${itemSelector}`)
+		}
+
+		for (let i = 0; i < items.length; i++) {
+			const { id, title } = getInfoByItem(items[i])
+
+			// hide hidden houses
+			if (hiddenHouses.value.find(house => house.id === id)) {
+				hiddenNum.value++
+				items[i].parentElement!.style.display = 'none'
+
+				continue
+			} else {
+				items[i].parentElement!.style.display = 'block'
+			}
+
+			// highlight saved houses
+			if (savedHouses.value.find(house => house.id === id)) {
+				items[i].style.background = '#f6f6ce'
+			} else {
+				items[i].style.background = ''
+			}
+
+			// 新增隱藏按鈕、儲存按鈕
+			const hideBtn = createHideBtn(id, title)
+			const saveBtn = createSaveBtn(id, title)
+			const itemInfo = items[i].querySelector<HTMLElement>('.item-info')
+			if (!itemInfo) throw new Error('Cannot find .item-info')
+
+			itemInfo.appendChild(hideBtn)
+			itemInfo.appendChild(saveBtn)
+
+			// 移除原本的愛心儲存功能
+			items[i].querySelector<HTMLElement>('.item-info-fav')?.remove()
+		}
+
+		// 顯示本頁已隱藏的數量
+		const total = document.querySelector<HTMLElement>('.list-sort .total')
+
+		const hiddenAmount = document.createElement('span')
+
+		hiddenAmount.id = 'hidden-amount'
+		hiddenAmount.innerHTML = ` (已隱藏 ${hiddenNum.value} 個，本頁尚有 ${items.length - hiddenNum.value} 個)`
+
+		document.getElementById('hidden-amount')?.remove()
+		total?.appendChild(hiddenAmount)
 	}
 
 	function getInfoByItem(item: HTMLElement): { id: string; title: string } {
@@ -69,99 +145,8 @@ function main() {
 		return { id, title }
 	}
 
-	for (let i = 0; i < items.length; i++) {
-		// 隱藏原本的愛心儲存
-		hideItemHeart(items[i])
-
-		const { id, title } = getInfoByItem(items[i])
-
-		// 新增隱藏按鈕、儲存按鈕
-		const hideBtn = createHideBtn(id, title)
-		const saveBtn = createSaveBtn(id, title)
-		const itemInfo = items[i].querySelector<HTMLElement>('.item-info')
-		if (!itemInfo) throw new Error('Cannot find .item-info')
-
-		itemInfo.appendChild(hideBtn)
-		itemInfo.appendChild(saveBtn)
-	}
-
-	// const isHidden = ref(false)
-
-	// watch(isHidden, () => {
-	// 	if (isHidden.value) {
-	// 		displayHiddenAmount()
-	// 	}
-	// })
-
-	function renderSection(delay: number = 0) {
-		setTimeout(() => {
-			const sections = document.querySelectorAll<HTMLElement>('section.vue-list-rent-item')
-			if (!sections.length) throw new Error('Cannot find .vue-list-rent-item')
-
-			sections.forEach(section => {
-				const id = section.getAttribute('data-bind')
-				if (!id) throw new Error('Cannot find id')
-
-				if (hiddenHouses.value.find(house => house.id === id)) {
-					numHiddenInThisPage.value++
-					// section.style.background = 'gray'
-					section.style.display = 'none'
-				} else {
-					// section.style.background = 'white'
-					section.style.display = 'block'
-				}
-
-				// render saved houses
-				if (savedHouses.value.find(house => house.id === id)) {
-					section.style.background = '#f6f6ce'
-				} else {
-					section.style.background = ''
-				}
-			})
-
-			isHidden.value = true
-		}, delay)
-	}
-
-	let counter = 0
-
-	// note: 本身自帶 immediate
-	// 首次載入時跑了兩次，一次 for hiddenHouses，一次 for savedHouses
-	watch([hiddenHouses, savedHouses], () => {
-		// 第一次需要延遲 1 秒，否則會找不到 element
-		if (counter === 0) {
-			renderSection(1000)
-			counter++
-		} else {
-			renderSection()
-		}
-	})
-
-	// 顯示本頁為隱藏的數量
-	function displayHiddenAmount() {
-		setTimeout(() => {
-			// 計算本頁有幾個 section
-			const sections = document.querySelectorAll<HTMLElement>('section.vue-list-rent-item')
-			if (!sections.length) throw new Error('Cannot find .vue-list-rent-item')
-
-			// 顯示本頁為隱藏的數量
-			const switch_amount = document.querySelector<HTMLElement>('div.list-container-content .switch-tips .switch-amount')
-			if (!switch_amount) throw new Error('Cannot find .switch-amount')
-
-			// remove text by id
-			document.getElementById('displayHiddenAmount')?.remove()
-
-			// 顯示本頁待看的數量
-			const text = document.createElement('div')
-			// add id to text
-			text.style.display = 'inline'
-			text.id = 'displayHiddenAmount'
-			text.innerHTML = ` (已隱藏 ${numHiddenInThisPage.value} 個，本頁尚有 ${sections.length - numHiddenInThisPage.value} 個)`
-			switch_amount.appendChild(text)
-		}, 1000)
-	}
-
 	// =================================== Mount App.vue ================================
+
 	const container = document.createElement('div')
 	container.id = __NAME__
 	const root = document.createElement('div')
@@ -192,31 +177,40 @@ try {
 function injectCSS() {
 	const style = document.createElement('style')
 	style.textContent = `
-			button.ext-hide-button {
-				position: absolute;
-				right: 10px;
-				top: 0px;
-				width: 100px;
-				padding: 10px;
-				cursor:pointer;
-			}
+	.ext-btn {
+		border: 1px solid transparent;
+		border-radius: 0.25rem;
+		padding: 8px 8px;
+		font-size: 0.75rem;
+		background-color: #0d9488;
+		color: #ffffff;
+		cursor: pointer;
+		z-index: 9999;
+	}
 
-			button.ext-hide-button:hover {
-				background-color: #d0cccc;
-			}
+	.ext-btn:hover {
+		background-color: #0f766e;
+	}
 
-			button.ext-save-button {
-				position: absolute;
-				right: 10px;
-				top: 40px;
-				width: 100px;
-				padding: 10px;
-				cursor:pointer;
-			}
+	.ext-btn:disabled {
+		cursor: default;
+		background-color: #4b5563;
+		opacity: 0.5;
+	}
 
-			button.ext-save-button:hover {
-				background-color: #d0cccc;
-			}
-		`
+	.ext-btn.hide {
+		position: absolute;
+		right: 10px;
+		top: 0px;
+		width: 100px;
+	}
+
+	.ext-btn.save {
+		position: absolute;
+		right: 10px;
+		top: 40px;
+		width: 100px;
+	}
+	`
 	document.head.appendChild(style)
 }

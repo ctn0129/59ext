@@ -47,6 +47,8 @@ export function hideContent(isFilterHidden: Ref<boolean>) {
 		'.side_tool_wrap.newFiexdSide': false, // 最右邊的漂浮工具列
 		'.filter-container': isFilterHidden.value, // 篩選器
 		'.recommend-container': false, // 推薦區塊
+		'section.house-info': false, // 底部倒數第二層
+		footer: false, // 最下面的 footer
 	}
 
 	for (const className in hiddenClasses) {
@@ -65,14 +67,4 @@ export function hideContent(isFilterHidden: Ref<boolean>) {
 	if (asideElement) {
 		asideElement.style.display = 'none'
 	}
-}
-
-/**
- * 隱藏房屋的儲存愛心按鈕
- */
-export function hideItemHeart(item: HTMLElement) {
-	const heart = item.querySelector<HTMLElement>('.item-info-fav')
-	if (!heart) throw new Error('Cannot find .item-info-fav')
-
-	heart.style.display = 'none'
 }

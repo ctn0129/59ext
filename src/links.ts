@@ -6,7 +6,7 @@ export const links = [
 		&kind=1
 		&price=10000$_30000$
 		&shType=host
-		&floor=3_
+		&floor=2_
 		&notice=not_cover
 		&sort=posttime_desc
 		`,
@@ -18,7 +18,7 @@ export const links = [
 		&kind=2
 		&price=9000$_15000$
 		&shType=host
-		&floor=3_
+		&floor=2_
 		&notice=not_cover
 		&sort=posttime_desc
 		`,
@@ -30,7 +30,7 @@ export const links = [
 		&kind=2
 		&price=15000$_20000$
 		&shType=host
-		&floor=3_
+		&floor=2_
 		&notice=not_cover
 		&sort=posttime_desc
 		`,

@@ -2,11 +2,25 @@
 import 'uno.css'
 import { isFilterHidden } from '~/logic'
 
-const params = new URLSearchParams(window.location.search)
-const paramsObj = Object.fromEntries(params.entries())
+const params = ref(new URLSearchParams(window.location.search))
+
+const observer = new MutationObserver(() => {
+	// console.log('App.vue observer')
+	params.value = new URLSearchParams(window.location.search)
+})
+
+onMounted(() => {
+	observer.observe(document, { childList: true, subtree: true })
+})
+
+onUnmounted(() => {
+	observer.disconnect()
+})
+
+const paramsObj = computed(() => Object.fromEntries(params.value.entries()))
 
 const kind = computed(() => {
-	return paramsObj['kind']
+	return paramsObj.value['kind']
 })
 
 const displayKind = computed(() => {
@@ -22,8 +36,8 @@ const displayKind = computed(() => {
 
 <template>
 	<div class="ext-floating">
-		<div class="ext-floating-content">
-			<div class="text-3xl">{{ displayKind }}</div>
+		<div class="ext-floating-content bg-white">
+			<div class="text-xl">{{ displayKind }}</div>
 			<div class="mt-5">
 				<div v-for="(value, key) in paramsObj" :key="key">{{ key }}: {{ value }}</div>
 			</div>

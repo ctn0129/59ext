@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { storageDemo } from '~/logic/storage'
 import { links } from '~/links'
 import { runtime } from 'webextension-polyfill'
 
@@ -15,7 +14,6 @@ function openOptionsPage() {
 		<SharedSubtitle /> -->
 
 		<button class="btn mt-2" @click="openOptionsPage">後台</button>
-		<div class="mt-2"><span class="opacity-50">Storage:</span> {{ storageDemo }}</div>
 
 		<div v-for="link in links" :key="link.name">
 			<a :href="link.url" target="_blank" class="btn mt-2">{{ link.name }}</a>

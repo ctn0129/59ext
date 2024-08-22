@@ -3,7 +3,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { setupApp } from '~/logic/common-setup'
 import { hiddenHouses, isFilterHidden, savedHouses } from '~/logic'
-import { hideContent, hideItemHeart, hideRightSideFloatingMenu } from './hide'
+import { hideContent, hideRightSideFloatingMenu } from './hide'
 import { watchImmediate } from '@vueuse/core'
 import { createHideBtn, createSaveBtn } from './buttons'
 
@@ -13,8 +13,12 @@ function main() {
 	const parsedUrl = new URL(window.location.href)
 	const isDetailPage = /^\d+$/.test(parsedUrl.pathname.slice(1))
 
+	injectCSS()
+	hideRightSideFloatingMenu()
+
+	// =========================== House Detail Page ===========================
+
 	if (isDetailPage) {
-		// =========================== 細節頁面 ===========================
 		console.info('Hello House Detail Page')
 
 		// =========================== feat: esc to close ===========================
@@ -28,6 +32,86 @@ function main() {
 			}
 		})
 
+		// =========================== 顯示隱藏、儲存狀態，新增隱藏和儲存按鈕 ===========================
+		const house_price = document.querySelector<HTMLElement>('.house-price')
+		if (!house_price) {
+			console.error('Cannot find .house-price')
+			return
+		}
+
+		const is_hidden = document.createElement('span')
+		const is_saved = document.createElement('span')
+
+		const url = window.location.href
+		const parts = url.split('/')
+		const id = parts[parts.length - 1]
+		const title = document.querySelector<HTMLElement>('.house-title > h1')?.innerText || 'No Title'
+
+		is_hidden.id = 'is-hidden'
+		is_saved.id = 'is-saved'
+
+		// =========================== detail page add Hide button ===========================
+
+		const hideBtn = document.createElement('button')
+		hideBtn.innerText = 'Hide/Show'
+		hideBtn.className = 'ext-btn hide'
+		hideBtn.style.display = 'inline-block'
+		hideBtn.style.position = 'static'
+		hideBtn.addEventListener('click', event => {
+			event.stopPropagation()
+
+			// show if already hidden
+			if (hiddenHouses.value.find(house => house.id === id)) {
+				hiddenHouses.value = hiddenHouses.value.filter(house => house.id !== id)
+				window.location.reload()
+				return
+			}
+
+			hiddenHouses.value.push({
+				id,
+				title,
+			})
+
+			window.location.reload()
+		})
+
+		// =========================== detail page add Save button ===========================
+
+		const saveBtn = document.createElement('button')
+		saveBtn.innerText = 'Save/Unsave'
+		saveBtn.className = 'ext-btn save'
+		saveBtn.style.display = 'inline-block'
+		saveBtn.style.position = 'static'
+		saveBtn.style.marginLeft = '5px'
+		saveBtn.addEventListener('click', event => {
+			event.stopPropagation()
+
+			// unsave if already saved
+			if (savedHouses.value.find(house => house.id === id)) {
+				savedHouses.value = savedHouses.value.filter(house => house.id !== id)
+				window.location.reload()
+				return
+			}
+
+			savedHouses.value.push({
+				id,
+				title,
+			})
+
+			window.location.reload()
+		})
+
+		setTimeout(() => {
+			house_price.appendChild(is_hidden)
+			house_price.appendChild(is_saved)
+
+			is_hidden.innerHTML = !!hiddenHouses.value.find(house => house.id === id) ? '已隱藏' : ''
+			is_saved.innerHTML = !!savedHouses.value.find(house => house.id === id) ? '已儲存' : ''
+
+			house_price.appendChild(hideBtn)
+			house_price.appendChild(saveBtn)
+		}, 500)
+
 		return
 	}
 
@@ -36,12 +120,6 @@ function main() {
 	watchImmediate(isFilterHidden, () => {
 		hideContent(isFilterHidden)
 	})
-
-	hideRightSideFloatingMenu()
-
-	// =========================== inject css ===========================
-
-	injectCSS()
 
 	// =================================== 渲染列表 ================================
 
@@ -177,6 +255,11 @@ try {
 function injectCSS() {
 	const style = document.createElement('style')
 	style.textContent = `
+	#is-hidden, #is-saved {
+		margin: 0 5px;
+		color: red;
+	}
+
 	.ext-btn {
 		border: 1px solid transparent;
 		border-radius: 0.25rem;
